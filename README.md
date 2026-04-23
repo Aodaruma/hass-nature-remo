@@ -21,7 +21,7 @@ Yet another [Home Assistant](https://www.home-assistant.io) component for [Natur
   - [x] Fetch cumulative consumed energy
   - [x] Fetch cumulative returned energy (for solar panels, etc.)
 - [ ] Switch
-- [ ] Light
+- [x] Light (basic on/off + button services)
 - [ ] TV
 - [x] Others
   - [x] Fetch sensor data
@@ -59,7 +59,9 @@ Enter the following information in the dialog and click `Add` button.
     └── nature_remo
         ├── __init__.py
         ├── climate.py
+        ├── light.py
         ├── manifest.json
+        ├── services.yaml
         └── sensor.py
 ```
 

@@ -188,7 +188,9 @@ class NatureRemoTemperatureSensor(NatureRemoDeviceBase, SensorEntity):
     def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         device = self._coordinator.data["devices"][self._device["id"]]
-        return device["newest_events"]["te"]["val"]
+        newest_events = device.get("newest_events") or {}
+        temperature_event = newest_events.get("te") or {}
+        return temperature_event.get("val")
 
 
 class NatureRemoHumiditySensor(NatureRemoDeviceBase, SensorEntity):
@@ -203,7 +205,9 @@ class NatureRemoHumiditySensor(NatureRemoDeviceBase, SensorEntity):
     def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         device = self._coordinator.data["devices"][self._device["id"]]
-        return device["newest_events"]["hu"]["val"]
+        newest_events = device.get("newest_events") or {}
+        humidity_event = newest_events.get("hu") or {}
+        return humidity_event.get("val")
 
 
 class NatureRemoIlluminanceSensor(NatureRemoDeviceBase, SensorEntity):
@@ -223,4 +227,6 @@ class NatureRemoIlluminanceSensor(NatureRemoDeviceBase, SensorEntity):
     def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         device = self._coordinator.data["devices"][self._device["id"]]
-        return device["newest_events"]["il"]["val"]
+        newest_events = device.get("newest_events") or {}
+        illuminance_event = newest_events.get("il") or {}
+        return illuminance_event.get("val")
