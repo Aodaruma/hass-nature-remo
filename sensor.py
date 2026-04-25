@@ -70,7 +70,7 @@ class NatureRemoE(NatureRemoBase, SensorEntity):
             native_unit_of_measurement=UnitOfPower.WATT,
         )
 
-    @cached_property
+    @property
     def native_value(self) -> float | None:
         """Return the state of the sensor."""
         appliance = self._coordinator.data["appliances"][self._appliance_id]
@@ -134,14 +134,14 @@ class NatureRemoCumulativeEnergySensorBase(NatureRemoBase, SensorEntity):
     def epc_exists(props: Dict[int, float], epc: int) -> bool:
         return epc in props
 
-    @cached_property
+    @property
     def native_value(self) -> float | None:
         appliance = self._coordinator.data["appliances"][self._appliance_id]
         smart_meter = appliance["smart_meter"]
         props = {int(p["epc"]): float(p["val"]) for p in smart_meter["echonetlite_properties"]}
         return self.calculate_energy(props, self._epc)
 
-    @cached_property
+    @property
     def available(self) -> bool:
         appliance = self._coordinator.data["appliances"][self._appliance_id]
         smart_meter = appliance["smart_meter"]
@@ -184,7 +184,7 @@ class NatureRemoTemperatureSensor(NatureRemoDeviceBase, SensorEntity):
         self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
         self._attr_device_class = SensorDeviceClass.TEMPERATURE
 
-    @cached_property
+    @property
     def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         device = self._coordinator.data["devices"][self._device["id"]]
@@ -201,7 +201,7 @@ class NatureRemoHumiditySensor(NatureRemoDeviceBase, SensorEntity):
         self._name = self._name.strip() + " Humidity"
         self._attr_device_class = SensorDeviceClass.HUMIDITY
 
-    @cached_property
+    @property
     def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         device = self._coordinator.data["devices"][self._device["id"]]
@@ -223,7 +223,7 @@ class NatureRemoIlluminanceSensor(NatureRemoDeviceBase, SensorEntity):
         """Return a unique ID."""
         return self._device["id"] + "-illuminance"
 
-    @cached_property
+    @property
     def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         device = self._coordinator.data["devices"][self._device["id"]]

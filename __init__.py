@@ -81,9 +81,18 @@ class NatureRemoAPI:
         _LOGGER.debug("Trying to fetch appliance and device list from API.")
         headers = {"Authorization": f"Bearer {self._access_token}"}
         response = await self._session.get(f"{_RESOURCE}/appliances", headers=headers)
-        appliances = {x["id"]: x for x in await response.json()}
+        response.raise_for_status()
+        appliances_json = await response.json()
+        if not isinstance(appliances_json, list):
+            raise ValueError(f"Unexpected appliances response: {type(appliances_json)}")
+        appliances = {x["id"]: x for x in appliances_json}
+
         response = await self._session.get(f"{_RESOURCE}/devices", headers=headers)
-        devices = {x["id"]: x for x in await response.json()}
+        response.raise_for_status()
+        devices_json = await response.json()
+        if not isinstance(devices_json, list):
+            raise ValueError(f"Unexpected devices response: {type(devices_json)}")
+        devices = {x["id"]: x for x in devices_json}
         return {"appliances": appliances, "devices": devices}
 
     async def post(self, path: str, data: Dict[str, Any]) -> Any:
@@ -91,6 +100,7 @@ class NatureRemoAPI:
         _LOGGER.debug("Trying to request post:%s, data:%s", path, data)
         headers = {"Authorization": f"Bearer {self._access_token}"}
         response = await self._session.post(f"{_RESOURCE}{path}", data=data, headers=headers)
+        response.raise_for_status()
         return await response.json()
 
 

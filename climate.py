@@ -99,7 +99,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         """Return the list of supported features."""
         return SUPPORT_FLAGS
 
-    @cached_property
+    @property
     def current_temperature(self) -> Optional[float]:
         """Return the current temperature."""
         return self._current_temperature
@@ -109,7 +109,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         """Return the unit of measurement which this thermostat uses."""
         return UnitOfTemperature.CELSIUS
 
-    @cached_property
+    @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""
         temp_range = self._current_mode_temp_range()
@@ -117,7 +117,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
             return 0
         return min(temp_range)
 
-    @cached_property
+    @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
         temp_range = self._current_mode_temp_range()
@@ -125,13 +125,13 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
             return 0
         return max(temp_range)
 
-    @cached_property
+    @property
     def target_temperature(self) -> Optional[float]:
         """Return the temperature we try to reach."""
         _LOGGER.debug("Current target temperature: %s", self._target_temperature)
         return self._target_temperature
 
-    @cached_property
+    @property
     def target_temperature_step(self) -> float:
         """Return the supported step of target temperature."""
         temp_range = self._current_mode_temp_range()
@@ -142,12 +142,12 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
                 return step
         return 1
 
-    @cached_property
+    @property
     def hvac_mode(self) -> Optional[HVACMode]:
         """Return hvac operation ie. heat, cool mode."""
         return self._hvac_mode
 
-    @cached_property
+    @property
     def hvac_modes(self) -> List[HVACMode]:
         """Return the list of available operation modes."""
         remo_modes = list(self._modes.keys())
@@ -155,25 +155,29 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         ha_modes.append(HVACMode.OFF)
         return ha_modes
 
-    @cached_property
+    @property
     def fan_mode(self) -> Optional[str]:
         """Return the fan setting."""
         return self._fan_mode
 
-    @cached_property
+    @property
     def fan_modes(self) -> List[str]:
         """List of available fan modes."""
-        return self._modes[self._remo_mode]["vol"]
+        if self._remo_mode is None:
+            return []
+        return self._modes.get(self._remo_mode, {}).get("vol", [])
 
-    @cached_property
+    @property
     def swing_mode(self) -> Optional[str]:
         """Return the swing setting."""
         return self._swing_mode
 
-    @cached_property
+    @property
     def swing_modes(self) -> List[str]:
         """List of available swing modes."""
-        return self._modes[self._remo_mode]["dir"]
+        if self._remo_mode is None:
+            return []
+        return self._modes.get(self._remo_mode, {}).get("dir", [])
 
     @property
     def device_state_attributes(self) -> Dict[str, Any]:
@@ -181,6 +185,13 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         return {
             "previous_target_temperature": self._last_target_temperature,
         }
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        if not self._coordinator.last_update_success:
+            return False
+        return self._appliance_id in self._coordinator.data.get("appliances", {})
 
     async def async_turn_off(self) -> None:
         """Turn the entity off."""
@@ -284,5 +295,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         self.async_write_ha_state()
 
     def _current_mode_temp_range(self) -> List[float]:
-        temp_range = self._modes[self._remo_mode]["temp"]
+        if self._remo_mode is None:
+            return []
+        temp_range = self._modes.get(self._remo_mode, {}).get("temp", [])
         return list(map(float, filter(None, temp_range)))  # type: ignore[arg-type]
